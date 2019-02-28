@@ -1,4 +1,4 @@
-# netpics
+# netplan
 
 ## Project setup
 ```
