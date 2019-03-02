@@ -33,7 +33,7 @@ func main() {
 	{
 		v1.POST("/networkmap", createNetworkMapEndpoint)
 		v1.GET("/networkmap/:id", getNetworkMapEndpoint)
-		v1.PUT("/networkmap/:id", updateNetworkMapEndpoint)
+		v1.PUT("/networkmap", updateNetworkMapEndpoint)
 		v1.DELETE("/networkmap/:id", deleteNetworkMapEndpoint)
 
 		v1.POST("/networkmap/:id/vpc", createVPCEndpoint)
@@ -48,13 +48,12 @@ func main() {
 }
 
 func createNetworkMapEndpoint(c *gin.Context) {
-	var req s.CreateNetworkMapRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var nm s.NetworkMap
+	if err := c.ShouldBindJSON(&nm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,
 		})
 	}
-	nm := s.NetworkMap{Name: req.Name}
 	db.Create(&nm)
 	c.JSON(http.StatusCreated, nm)
 }
@@ -72,9 +71,33 @@ func getNetworkMapEndpoint(c *gin.Context) {
 	c.JSON(http.StatusOK, nm)
 }
 
-func updateNetworkMapEndpoint(c *gin.Context) {}
+func updateNetworkMapEndpoint(c *gin.Context) {
+	var nm s.NetworkMap
+	if err := c.ShouldBindJSON(&nm); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error,
+		})
+	}
+	var update s.NetworkMap
+	db.Where("id = ?", nm.ID).First(&update)
+	update.Name = nm.Name
+	db.Save(&update)
+	c.JSON(http.StatusOK, update)
+}
 
-func deleteNetworkMapEndpoint(c *gin.Context) {}
+func deleteNetworkMapEndpoint(c *gin.Context) {
+	sid := c.Param("id")
+	id, err := strconv.Atoi(sid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error,
+		})
+	}
+	var nm s.NetworkMap
+	db.Where("id = ?", id).First(&nm)
+	db.Delete(nm)
+	c.Status(http.StatusNoContent)
+}
 
 func createVPCEndpoint(c *gin.Context) {}
 

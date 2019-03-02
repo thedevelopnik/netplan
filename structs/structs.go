@@ -38,10 +38,3 @@ type (
 		VPCs []VPC
 	}
 )
-
-// Request Models
-type (
-	CreateNetworkMapRequest struct {
-		Name string
-	}
-)
