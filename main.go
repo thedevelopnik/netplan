@@ -1,112 +1,44 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	s "github.com/thedevelopnik/netplan/structs"
+
+	"github.com/thedevelopnik/netplan/db"
+	_ "github.com/thedevelopnik/netplan/db"
+	h "github.com/thedevelopnik/netplan/handlers"
 )
 
-var db *gorm.DB
-
-func init() {
-	var err error
-	db, err = gorm.Open("postgres", "host=localhost port=6666 user=netplan dbname=netplan password=netplan sslmode=disable")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	db.AutoMigrate(&s.Subnet{}, &s.VPC{}, &s.NetworkMap{})
-}
-
 func main() {
+	db := db.Conn()
 	defer db.Close()
 
 	r := gin.Default()
+	r.Use(dbMiddleware(db))
 	r.StaticFile("/app.js", "./dist/app.js")
 	r.StaticFile("/about.js", "./dist/about.js")
 	r.StaticFile("/", "./dist/index.html")
 	v1 := r.Group("/v1")
 	{
-		v1.POST("/networkmap", createNetworkMapEndpoint)
-		v1.GET("/networkmap/:id", getNetworkMapEndpoint)
-		v1.PUT("/networkmap", updateNetworkMapEndpoint)
-		v1.DELETE("/networkmap/:id", deleteNetworkMapEndpoint)
+		v1.POST("/networkmap", h.CreateNetworkMapEndpoint)
+		v1.GET("/networkmap/:id", h.GetNetworkMapEndpoint)
+		v1.PUT("/networkmap", h.UpdateNetworkMapEndpoint)
+		v1.DELETE("/networkmap/:id", h.DeleteNetworkMapEndpoint)
 
-		v1.POST("/networkmap/:id/vpc", createVPCEndpoint)
-		v1.PUT("/networkmap/:id/vpc/:id", updateVPCEndpoint)
-		v1.DELETE("/networkmap/:id/vpc/:id", deleteVPCEndpoint)
+		v1.POST("/networkmap/:id/vpc", h.CreateVPCEndpoint)
+		v1.PUT("/networkmap/:id/vpc/:id", h.UpdateVPCEndpoint)
+		v1.DELETE("/networkmap/:id/vpc/:id", h.DeleteVPCEndpoint)
 
-		v1.POST("/network/:id/vpc/:id/subnet", createSubnetEndpoint)
-		v1.PUT("/network/:id/vpc/:id/subnet/:id", updateSubnetEndpoint)
-		v1.DELETE("/network/:id/vpc/:id/subnet/:id", deleteSubnetEndpoint)
+		v1.POST("/network/:id/vpc/:id/subnet", h.CreateSubnetEndpoint)
+		v1.PUT("/network/:id/vpc/:id/subnet/:id", h.UpdateSubnetEndpoint)
+		v1.DELETE("/network/:id/vpc/:id/subnet/:id", h.DeleteSubnetEndpoint)
 	}
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
 
-func createNetworkMapEndpoint(c *gin.Context) {
-	var nm s.NetworkMap
-	if err := c.ShouldBindJSON(&nm); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
-		})
+func dbMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
 	}
-	db.Create(&nm)
-	c.JSON(http.StatusCreated, nm)
 }
-
-func getNetworkMapEndpoint(c *gin.Context) {
-	sid := c.Param("id")
-	id, err := strconv.Atoi(sid)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
-		})
-	}
-	var nm s.NetworkMap
-	db.Where("id = ?", id).First(&nm)
-	c.JSON(http.StatusOK, nm)
-}
-
-func updateNetworkMapEndpoint(c *gin.Context) {
-	var nm s.NetworkMap
-	if err := c.ShouldBindJSON(&nm); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
-		})
-	}
-	var update s.NetworkMap
-	db.Where("id = ?", nm.ID).First(&update)
-	update.Name = nm.Name
-	db.Save(&update)
-	c.JSON(http.StatusOK, update)
-}
-
-func deleteNetworkMapEndpoint(c *gin.Context) {
-	sid := c.Param("id")
-	id, err := strconv.Atoi(sid)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
-		})
-	}
-	var nm s.NetworkMap
-	db.Where("id = ?", id).First(&nm)
-	db.Delete(nm)
-	c.Status(http.StatusNoContent)
-}
-
-func createVPCEndpoint(c *gin.Context) {}
-
-func updateVPCEndpoint(c *gin.Context) {}
-
-func deleteVPCEndpoint(c *gin.Context) {}
-
-func createSubnetEndpoint(c *gin.Context) {}
-
-func updateSubnetEndpoint(c *gin.Context) {}
-
-func deleteSubnetEndpoint(c *gin.Context) {}
