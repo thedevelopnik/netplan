@@ -28,7 +28,7 @@ export function newSubnet (metadata) {
 export function addVPC (networkMap, vpcMetadata, subnetMetadatas) {
   return new Promise((resolve, reject) => {
     const vpc = newVPC(vpcMetadata, subnetMetadatas)
-    if (!networkHasOverlap(vpcMetadata.netmask, networkMap.vpcs)) {
+    if (!networkHasOverlap(vpc.netmask, networkMap.vpcs)) {
       let vpcs = networkMap.vpcs
       vpcs.push(vpc)
       vpcs.sort(sortNetworks)
