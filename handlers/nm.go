@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -14,6 +13,7 @@ import (
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
 func CreateNetworkMapEndpoint(c *gin.Context) {
+	// get the database connection from the context
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -21,6 +21,7 @@ func CreateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	// get the network map object from the request, or send error
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -28,17 +29,20 @@ func CreateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	// create in the db
 	if err := db.Create(&nm).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
 	}
 
+	// send full created database object back
 	c.JSON(http.StatusCreated, nm)
 }
 
 // GetNetworkMapEndpoint gets a NetworkMap struct from a given id.
 func GetNetworkMapEndpoint(c *gin.Context) {
+	// get the database connection from the context
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -46,14 +50,14 @@ func GetNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	sid := c.Param("id")
-	id, err := strconv.Atoi(sid)
+	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,
 		})
 	}
 
+	// find the network map in the db
 	var nm s.NetworkMap
 	if err := db.Where("id = ?", id).First(&nm).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -61,12 +65,14 @@ func GetNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	// return it in the response
 	c.JSON(http.StatusOK, nm)
 }
 
 // UpdateNetworkMapEndpoint updates the name of a
 // NetworkMap given an id and name.
 func UpdateNetworkMapEndpoint(c *gin.Context) {
+	// get the database connection from the context
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -74,6 +80,7 @@ func UpdateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	// get the values to update with off the request
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -81,15 +88,31 @@ func UpdateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	// find the current one matching the one with updated values
 	var update s.NetworkMap
-	db.Where("id = ?", nm.ID).First(&update)
+	if err := db.Where("id = ?", nm.ID).First(&update).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error,
+		})
+	}
+
+	// update the name
 	update.Name = nm.Name
-	db.Save(&update)
+
+	// save in the db or send error
+	if err := db.Save(&update).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error,
+		})
+	}
+
+	// send back updated value
 	c.JSON(http.StatusOK, update)
 }
 
 // DeleteNetworkMapEndpoint deletes a NetworkMap given an id.
 func DeleteNetworkMapEndpoint(c *gin.Context) {
+	// get the database connection from the context
 	db, ok := c.MustGet("db").(*gorm.DB)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -97,16 +120,28 @@ func DeleteNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	sid := c.Param("id")
-	id, err := strconv.Atoi(sid)
+	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,
 		})
 	}
 
+	// find db ojbect matching the id
 	var nm s.NetworkMap
-	db.Where("id = ?", id).First(&nm)
-	db.Delete(nm)
+	if err := db.Where("id = ?", id).First(&nm).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error,
+		})
+	}
+
+	// delete the object
+	if err := db.Delete(nm).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error,
+		})
+	}
+
+	// send back a no content response
 	c.Status(http.StatusNoContent)
 }
