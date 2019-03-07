@@ -20,18 +20,21 @@ func main() {
 	r.StaticFile("/", "./dist/index.html")
 	v1 := r.Group("/v1")
 	{
+		// NetworkMap Endpoints
 		v1.POST("/networkmap", h.CreateNetworkMapEndpoint)
 		v1.GET("/networkmap/:id", h.GetNetworkMapEndpoint)
 		v1.PUT("/networkmap", h.UpdateNetworkMapEndpoint)
 		v1.DELETE("/networkmap/:id", h.DeleteNetworkMapEndpoint)
 
-		v1.POST("/networkmap/:id/vpc", h.CreateVPCEndpoint)
-		v1.PUT("/networkmap/:id/vpc/:id", h.UpdateVPCEndpoint)
-		v1.DELETE("/networkmap/:id/vpc/:id", h.DeleteVPCEndpoint)
+		// VPC Endpoints
+		v1.POST("/networkmap/:nmid/vpc", h.CreateVPCEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:id", h.UpdateVPCEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:id", h.DeleteVPCEndpoint)
 
-		v1.POST("/network/:id/vpc/:id/subnet", h.CreateSubnetEndpoint)
-		v1.PUT("/network/:id/vpc/:id/subnet/:id", h.UpdateSubnetEndpoint)
-		v1.DELETE("/network/:id/vpc/:id/subnet/:id", h.DeleteSubnetEndpoint)
+		// Subnet Endpoints
+		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", h.CreateSubnetEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", h.UpdateSubnetEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", h.DeleteSubnetEndpoint)
 	}
 	r.Run() // listen and serve on 0.0.0.0:8080
 }

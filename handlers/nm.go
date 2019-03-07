@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
-	_ "github.com/thedevelopnik/netplan/db"
 	s "github.com/thedevelopnik/netplan/structs"
 )
 
@@ -81,6 +80,7 @@ func UpdateNetworkMapEndpoint(c *gin.Context) {
 			"error": err.Error,
 		})
 	}
+
 	var update s.NetworkMap
 	db.Where("id = ?", nm.ID).First(&update)
 	update.Name = nm.Name
@@ -104,20 +104,9 @@ func DeleteNetworkMapEndpoint(c *gin.Context) {
 			"error": err.Error,
 		})
 	}
+
 	var nm s.NetworkMap
 	db.Where("id = ?", id).First(&nm)
 	db.Delete(nm)
 	c.Status(http.StatusNoContent)
 }
-
-func CreateVPCEndpoint(c *gin.Context) {}
-
-func UpdateVPCEndpoint(c *gin.Context) {}
-
-func DeleteVPCEndpoint(c *gin.Context) {}
-
-func CreateSubnetEndpoint(c *gin.Context) {}
-
-func UpdateSubnetEndpoint(c *gin.Context) {}
-
-func DeleteSubnetEndpoint(c *gin.Context) {}
