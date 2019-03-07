@@ -4,23 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
 	s "github.com/thedevelopnik/netplan/structs"
 )
 
 // CreateSubnetEndpoint creates a Subnet and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func CreateSubnetEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
 	vpcID, err := convertParamToInt("vpcid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -39,7 +29,7 @@ func CreateSubnetEndpoint(c *gin.Context) {
 	sn.VPCID = vpcID
 
 	// create in the db
-	if err := db.Create(&sn).Error; err != nil {
+	if err := svc.repo.CreateSubnet(&sn); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -51,15 +41,7 @@ func CreateSubnetEndpoint(c *gin.Context) {
 
 // UpdateSubnetEndpoint updates the name of a
 // Subnet given an id and name.
-func UpdateSubnetEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) UpdateSubnetEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var sn s.Subnet
 	if err := c.ShouldBindJSON(&sn); err != nil {
@@ -68,19 +50,8 @@ func UpdateSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find the current one matching the one with updated values
-	var update s.Subnet
-	if err := db.Where("id = ?", sn.ID).First(&update).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
-	// update the name
-	update.Name = sn.Name
-
-	// save in the db or send error
-	if err := db.Save(&update).Error; err != nil {
+	update, err := svc.repo.UpdateSubnet(&sn)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -91,15 +62,7 @@ func UpdateSubnetEndpoint(c *gin.Context) {
 }
 
 // DeleteSubnetEndpoint deletes a Subnet given an id.
-func DeleteSubnetEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) DeleteSubnetEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -107,16 +70,8 @@ func DeleteSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find db ojbect matching the id
-	var sn s.Subnet
-	if err := db.Where("id = ?", id).First(&sn).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
 	// delete the object
-	if err := db.Delete(sn).Error; err != nil {
+	if err := svc.repo.DeleteSubnet(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

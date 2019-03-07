@@ -4,23 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
 	s "github.com/thedevelopnik/netplan/structs"
 )
 
 // CreateVPCEndpoint creates a VPC and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func CreateVPCEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
 	nmID, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -38,7 +28,7 @@ func CreateVPCEndpoint(c *gin.Context) {
 	vpc.NetworkMapID = nmID
 
 	// create in the db
-	if err := db.Create(&vpc).Error; err != nil {
+	if err := svc.repo.CreateVPC(&vpc); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -50,15 +40,7 @@ func CreateVPCEndpoint(c *gin.Context) {
 
 // UpdateVPCEndpoint updates the name of a
 // VPC given an id and name.
-func UpdateVPCEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) UpdateVPCEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var vpc s.VPC
 	if err := c.ShouldBindJSON(&vpc); err != nil {
@@ -67,19 +49,9 @@ func UpdateVPCEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find the current one matching the one with updated values
-	var update s.VPC
-	if err := db.Where("id = ?", vpc.ID).First(&update).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
-	// update the name
-	update.Name = vpc.Name
-
 	// save in the db or send error
-	if err := db.Save(&update).Error; err != nil {
+	update, err := svc.repo.UpdateVPC(&vpc)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -90,15 +62,7 @@ func UpdateVPCEndpoint(c *gin.Context) {
 }
 
 // DeleteVPCEndpoint deletes a VPC given an id.
-func DeleteVPCEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) DeleteVPCEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -106,16 +70,8 @@ func DeleteVPCEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find db ojbect matching the id
-	var vpc s.VPC
-	if err := db.Where("id = ?", id).First(&vpc).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
 	// delete the object
-	if err := db.Delete(vpc).Error; err != nil {
+	if err := svc.repo.DeleteVPC(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

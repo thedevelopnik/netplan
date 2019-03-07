@@ -20,7 +20,7 @@ func (r npRepo) GetNetworkMap(id int) (*s.NetworkMap, error) {
 		return nil, err
 	}
 
-	return nm, nil
+	return &nm, nil
 }
 
 func (r npRepo) UpdateNetworkMap(nm *s.NetworkMap) (*s.NetworkMap, error) {
@@ -38,18 +38,20 @@ func (r npRepo) UpdateNetworkMap(nm *s.NetworkMap) (*s.NetworkMap, error) {
 		return nil, err
 	}
 
-	return update, nil
+	return &update, nil
 }
 
 func (r npRepo) DeleteNetworkMap(id int) error {
 	// find db ojbect matching the id
 	var nm s.NetworkMap
-	if err := db.Where("id = ?", id).First(&nm).Error; err != nil {
+	if err := r.db.Where("id = ?", id).First(&nm).Error; err != nil {
 		return err
 	}
 
 	// delete the object
-	if err := db.Delete(nm).Error; err != nil {
+	if err := r.db.Delete(nm).Error; err != nil {
 		return err
 	}
+
+	return nil
 }

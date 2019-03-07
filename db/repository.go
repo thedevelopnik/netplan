@@ -10,10 +10,10 @@ type NetplanRepository interface {
 	GetNetworkMap(int) (*s.NetworkMap, error)
 	UpdateNetworkMap(*s.NetworkMap) (*s.NetworkMap, error)
 	DeleteNetworkMap(int) error
-	CreateVPC(*s.VPC) (*s.VPC, error)
+	CreateVPC(*s.VPC) error
 	UpdateVPC(*s.VPC) (*s.VPC, error)
 	DeleteVPC(int) error
-	CreateSubnet(*s.Subnet) (*s.Subnet, error)
+	CreateSubnet(*s.Subnet) error
 	UpdateSubnet(*s.Subnet) (*s.Subnet, error)
 	DeleteSubnet(int) error
 }

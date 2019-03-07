@@ -4,23 +4,13 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
 	s "github.com/thedevelopnik/netplan/structs"
 )
 
 // CreateNetworkMapEndpoint creates a NetworkMap and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func CreateNetworkMapEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) CreateNetworkMapEndpoint(c *gin.Context) {
 	// get the network map object from the request, or send error
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
@@ -30,7 +20,7 @@ func CreateNetworkMapEndpoint(c *gin.Context) {
 	}
 
 	// create in the db
-	if err := db.Create(&nm).Error; err != nil {
+	if err := svc.repo.CreateNetworkMap(&nm); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -41,15 +31,7 @@ func CreateNetworkMapEndpoint(c *gin.Context) {
 }
 
 // GetNetworkMapEndpoint gets a NetworkMap struct from a given id.
-func GetNetworkMapEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) GetNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -57,9 +39,8 @@ func GetNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find the network map in the db
-	var nm s.NetworkMap
-	if err := db.Where("id = ?", id).First(&nm).Error; err != nil {
+	nm, err := svc.repo.GetNetworkMap(id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -71,15 +52,7 @@ func GetNetworkMapEndpoint(c *gin.Context) {
 
 // UpdateNetworkMapEndpoint updates the name of a
 // NetworkMap given an id and name.
-func UpdateNetworkMapEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) UpdateNetworkMapEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
@@ -88,19 +61,8 @@ func UpdateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	// find the current one matching the one with updated values
-	var update s.NetworkMap
-	if err := db.Where("id = ?", nm.ID).First(&update).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
-	// update the name
-	update.Name = nm.Name
-
-	// save in the db or send error
-	if err := db.Save(&update).Error; err != nil {
+	update, err := svc.repo.UpdateNetworkMap(&nm)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -111,15 +73,7 @@ func UpdateNetworkMapEndpoint(c *gin.Context) {
 }
 
 // DeleteNetworkMapEndpoint deletes a NetworkMap given an id.
-func DeleteNetworkMapEndpoint(c *gin.Context) {
-	// get the database connection from the context
-	db, ok := c.MustGet("db").(*gorm.DB)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "could not access database connection",
-		})
-	}
-
+func (svc netplanService) DeleteNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -128,15 +82,7 @@ func DeleteNetworkMapEndpoint(c *gin.Context) {
 	}
 
 	// find db ojbect matching the id
-	var nm s.NetworkMap
-	if err := db.Where("id = ?", id).First(&nm).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
-		})
-	}
-
-	// delete the object
-	if err := db.Delete(nm).Error; err != nil {
+	if err := svc.repo.DeleteNetworkMap(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

@@ -5,18 +5,18 @@ import (
 )
 
 // Subnet actions
-func (r npRepo) CreateSubnet(sn *s.Subnet) (*s.Subnet, error) {
+func (r npRepo) CreateSubnet(sn *s.Subnet) error {
 	// create in the db
-	if err := db.Create(&sn).Error; err != nil {
-		return nil, err
+	if err := r.db.Create(&sn).Error; err != nil {
+		return err
 	}
 
-	return sn, nil
+	return nil
 }
 
 func (r npRepo) UpdateSubnet(sn *s.Subnet) (*s.Subnet, error) {
 	var update s.Subnet
-	if err := db.Where("id = ?", sn.ID).First(&update).Error; err != nil {
+	if err := r.db.Where("id = ?", sn.ID).First(&update).Error; err != nil {
 		return nil, err
 	}
 
@@ -31,22 +31,23 @@ func (r npRepo) UpdateSubnet(sn *s.Subnet) (*s.Subnet, error) {
 	update.VPCID = sn.VPCID
 
 	// save in the db or send error
-	if err := db.Save(&update).Error; err != nil {
+	if err := r.db.Save(&update).Error; err != nil {
 		return nil, err
 	}
 
-	return update, nil
+	return &update, nil
 }
 
 func (r npRepo) DeleteSubnet(id int) error {
 	// find db ojbect matching the id
 	var sn s.Subnet
-	if err := db.Where("id = ?", id).First(&sn).Error; err != nil {
+	if err := r.db.Where("id = ?", id).First(&sn).Error; err != nil {
 		return err
 	}
 
 	// delete the object
-	if err := db.Delete(sn).Error; err != nil {
+	if err := r.db.Delete(sn).Error; err != nil {
 		return err
 	}
+	return nil
 }
