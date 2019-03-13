@@ -39,7 +39,13 @@ func (svc netplanService) GetNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	nm, err := svc.repo.GetNetworkMap(id)
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id parameter must be a positive integer",
+		})
+	}
+
+	nm, err := svc.repo.GetNetworkMap(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
@@ -81,8 +87,14 @@ func (svc netplanService) DeleteNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id parameter must be a positive integer",
+		})
+	}
+
 	// find db ojbect matching the id
-	if err := svc.repo.DeleteNetworkMap(id); err != nil {
+	if err := svc.repo.DeleteNetworkMap(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

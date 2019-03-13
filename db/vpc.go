@@ -38,7 +38,7 @@ func (r npRepo) UpdateVPC(vpc *s.VPC) (*s.VPC, error) {
 	return &update, nil
 }
 
-func (r npRepo) DeleteVPC(id int) error {
+func (r npRepo) DeleteVPC(id uint) error {
 	// find db ojbect matching the id
 	var vpc s.VPC
 	if err := r.db.Where("id = ?", id).First(&vpc).Error; err != nil {

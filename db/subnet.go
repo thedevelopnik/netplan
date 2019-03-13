@@ -38,7 +38,7 @@ func (r npRepo) UpdateSubnet(sn *s.Subnet) (*s.Subnet, error) {
 	return &update, nil
 }
 
-func (r npRepo) DeleteSubnet(id int) error {
+func (r npRepo) DeleteSubnet(id uint) error {
 	// find db ojbect matching the id
 	var sn s.Subnet
 	if err := r.db.Where("id = ?", id).First(&sn).Error; err != nil {

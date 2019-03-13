@@ -1,16 +1,21 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"log"
 
 	database "github.com/thedevelopnik/netplan/db"
 	h "github.com/thedevelopnik/netplan/handlers"
 )
 
 func main() {
-	db := database.Conn()
+	db, err := database.Conn()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	repo := database.New(db)
 	svc := h.New(repo)
 

@@ -70,8 +70,14 @@ func (svc netplanService) DeleteSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
+	if id <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id parameter must be a positive integer",
+		})
+	}
+
 	// delete the object
-	if err := svc.repo.DeleteSubnet(id); err != nil {
+	if err := svc.repo.DeleteSubnet(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

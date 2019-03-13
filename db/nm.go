@@ -14,7 +14,7 @@ func (r npRepo) CreateNetworkMap(nm *s.NetworkMap) error {
 	return nil
 }
 
-func (r npRepo) GetNetworkMap(id int) (*s.NetworkMap, error) {
+func (r npRepo) GetNetworkMap(id uint) (*s.NetworkMap, error) {
 	var nm s.NetworkMap
 	if err := r.db.Where("id = ?", id).First(&nm).Error; err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (r npRepo) UpdateNetworkMap(nm *s.NetworkMap) (*s.NetworkMap, error) {
 	return &update, nil
 }
 
-func (r npRepo) DeleteNetworkMap(id int) error {
+func (r npRepo) DeleteNetworkMap(id uint) error {
 	// find db ojbect matching the id
 	var nm s.NetworkMap
 	if err := r.db.Where("id = ?", id).First(&nm).Error; err != nil {
