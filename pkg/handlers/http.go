@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/thedevelopnik/netplan/pkg/db"
+	"github.com/thedevelopnik/netplan/pkg/service"
 )
 
-type NetplanService interface {
+type NetplanHTTP interface {
 	CreateNetworkMapEndpoint(*gin.Context)
 	GetNetworkMapEndpoint(*gin.Context)
 	UpdateNetworkMapEndpoint(*gin.Context)
@@ -18,12 +18,12 @@ type NetplanService interface {
 	DeleteSubnetEndpoint(*gin.Context)
 }
 
-func New(repo db.NetplanRepository) NetplanService {
-	return netplanService{
-		repo: repo,
+func New(svc service.NetPlan) NetplanHTTP {
+	return netplanHTTP{
+		svc: svc,
 	}
 }
 
-type netplanService struct {
-	repo db.NetplanRepository
+type netplanHTTP struct {
+	svc service.NetPlan
 }

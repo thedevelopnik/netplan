@@ -10,7 +10,7 @@ import (
 // CreateVPCEndpoint creates a VPC and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
+func (h netplanHTTP) CreateVPCEndpoint(c *gin.Context) {
 	nmID, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -34,7 +34,7 @@ func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
 	vpc.NetworkMapID = uint(nmID)
 
 	// create in the db
-	if err := svc.repo.CreateVPC(&vpc); err != nil {
+	if err := h.svc.CreateVPC(&vpc); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -46,7 +46,7 @@ func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
 
 // UpdateVPCEndpoint updates the name of a
 // VPC given an id and name.
-func (svc netplanService) UpdateVPCEndpoint(c *gin.Context) {
+func (h netplanHTTP) UpdateVPCEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var vpc s.VPC
 	if err := c.ShouldBindJSON(&vpc); err != nil {
@@ -56,7 +56,7 @@ func (svc netplanService) UpdateVPCEndpoint(c *gin.Context) {
 	}
 
 	// save in the db or send error
-	update, err := svc.repo.UpdateVPC(&vpc)
+	update, err := h.svc.UpdateVPC(&vpc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
@@ -68,7 +68,7 @@ func (svc netplanService) UpdateVPCEndpoint(c *gin.Context) {
 }
 
 // DeleteVPCEndpoint deletes a VPC given an id.
-func (svc netplanService) DeleteVPCEndpoint(c *gin.Context) {
+func (h netplanHTTP) DeleteVPCEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -83,7 +83,7 @@ func (svc netplanService) DeleteVPCEndpoint(c *gin.Context) {
 	}
 
 	// delete the object
-	if err := svc.repo.DeleteVPC(uint(id)); err != nil {
+	if err := h.svc.DeleteVPC(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

@@ -8,6 +8,7 @@ import (
 
 	database "github.com/thedevelopnik/netplan/pkg/db"
 	h "github.com/thedevelopnik/netplan/pkg/handlers"
+	svc "github.com/thedevelopnik/netplan/pkg/service"
 )
 
 func main() {
@@ -17,7 +18,8 @@ func main() {
 	}
 
 	repo := database.New(db)
-	svc := h.New(repo)
+	svc := svc.New(repo)
+	handler := h.New(svc)
 
 	r := gin.Default()
 	r.Use(dbMiddleware(db))
@@ -27,20 +29,20 @@ func main() {
 	v1 := r.Group("/v1")
 	{
 		// NetworkMap Endpoints
-		v1.POST("/networkmap", svc.CreateNetworkMapEndpoint)
-		v1.GET("/networkmap/:id", svc.GetNetworkMapEndpoint)
-		v1.PUT("/networkmap", svc.UpdateNetworkMapEndpoint)
-		v1.DELETE("/networkmap/:id", svc.DeleteNetworkMapEndpoint)
+		v1.POST("/networkmap", handler.CreateNetworkMapEndpoint)
+		v1.GET("/networkmap/:id", handler.GetNetworkMapEndpoint)
+		v1.PUT("/networkmap", handler.UpdateNetworkMapEndpoint)
+		v1.DELETE("/networkmap/:id", handler.DeleteNetworkMapEndpoint)
 
 		// VPC Endpoints
-		v1.POST("/networkmap/:nmid/vpc", svc.CreateVPCEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:id", svc.UpdateVPCEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:id", svc.DeleteVPCEndpoint)
+		v1.POST("/networkmap/:nmid/vpc", handler.CreateVPCEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:id", handler.UpdateVPCEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:id", handler.DeleteVPCEndpoint)
 
 		// Subnet Endpoints
-		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", svc.CreateSubnetEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", svc.UpdateSubnetEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", svc.DeleteSubnetEndpoint)
+		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", handler.CreateSubnetEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", handler.UpdateSubnetEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", handler.DeleteSubnetEndpoint)
 	}
 	if err := r.Run(); err != nil {
 		log.Fatalln(err)

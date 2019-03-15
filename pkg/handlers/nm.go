@@ -10,7 +10,7 @@ import (
 // CreateNetworkMapEndpoint creates a NetworkMap and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func (svc netplanService) CreateNetworkMapEndpoint(c *gin.Context) {
+func (h netplanHTTP) CreateNetworkMapEndpoint(c *gin.Context) {
 	// get the network map object from the request, or send error
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
@@ -20,7 +20,7 @@ func (svc netplanService) CreateNetworkMapEndpoint(c *gin.Context) {
 	}
 
 	// create in the db
-	if err := svc.repo.CreateNetworkMap(&nm); err != nil {
+	if err := h.svc.CreateNetworkMap(&nm); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -31,7 +31,7 @@ func (svc netplanService) CreateNetworkMapEndpoint(c *gin.Context) {
 }
 
 // GetNetworkMapEndpoint gets a NetworkMap struct from a given id.
-func (svc netplanService) GetNetworkMapEndpoint(c *gin.Context) {
+func (h netplanHTTP) GetNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -45,7 +45,7 @@ func (svc netplanService) GetNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	nm, err := svc.repo.GetNetworkMap(uint(id))
+	nm, err := h.svc.GetNetworkMap(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
@@ -58,7 +58,7 @@ func (svc netplanService) GetNetworkMapEndpoint(c *gin.Context) {
 
 // UpdateNetworkMapEndpoint updates the name of a
 // NetworkMap given an id and name.
-func (svc netplanService) UpdateNetworkMapEndpoint(c *gin.Context) {
+func (h netplanHTTP) UpdateNetworkMapEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
@@ -67,7 +67,7 @@ func (svc netplanService) UpdateNetworkMapEndpoint(c *gin.Context) {
 		})
 	}
 
-	update, err := svc.repo.UpdateNetworkMap(&nm)
+	update, err := h.svc.UpdateNetworkMap(&nm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
@@ -79,7 +79,7 @@ func (svc netplanService) UpdateNetworkMapEndpoint(c *gin.Context) {
 }
 
 // DeleteNetworkMapEndpoint deletes a NetworkMap given an id.
-func (svc netplanService) DeleteNetworkMapEndpoint(c *gin.Context) {
+func (h netplanHTTP) DeleteNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -94,7 +94,7 @@ func (svc netplanService) DeleteNetworkMapEndpoint(c *gin.Context) {
 	}
 
 	// find db ojbect matching the id
-	if err := svc.repo.DeleteNetworkMap(uint(id)); err != nil {
+	if err := h.svc.DeleteNetworkMap(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

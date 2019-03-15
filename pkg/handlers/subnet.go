@@ -10,7 +10,7 @@ import (
 // CreateSubnetEndpoint creates a Subnet and returns the created value.
 // Returns a 400 if it  can't create the struct,
 // or a 500 if the db connection or creation fails.
-func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
+func (h netplanHTTP) CreateSubnetEndpoint(c *gin.Context) {
 	vpcID, err := convertParamToInt("vpcid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -35,7 +35,7 @@ func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
 	sn.VPCID = uint(vpcID)
 
 	// create in the db
-	if err := svc.repo.CreateSubnet(&sn); err != nil {
+	if err := h.svc.CreateSubnet(&sn); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})
@@ -47,7 +47,7 @@ func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
 
 // UpdateSubnetEndpoint updates the name of a
 // Subnet given an id and name.
-func (svc netplanService) UpdateSubnetEndpoint(c *gin.Context) {
+func (h netplanHTTP) UpdateSubnetEndpoint(c *gin.Context) {
 	// get the values to update with off the request
 	var sn s.Subnet
 	if err := c.ShouldBindJSON(&sn); err != nil {
@@ -56,7 +56,7 @@ func (svc netplanService) UpdateSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
-	update, err := svc.repo.UpdateSubnet(&sn)
+	update, err := h.svc.UpdateSubnet(&sn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
@@ -68,7 +68,7 @@ func (svc netplanService) UpdateSubnetEndpoint(c *gin.Context) {
 }
 
 // DeleteSubnetEndpoint deletes a Subnet given an id.
-func (svc netplanService) DeleteSubnetEndpoint(c *gin.Context) {
+func (h netplanHTTP) DeleteSubnetEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("id", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -83,7 +83,7 @@ func (svc netplanService) DeleteSubnetEndpoint(c *gin.Context) {
 	}
 
 	// delete the object
-	if err := svc.repo.DeleteSubnet(uint(id)); err != nil {
+	if err := h.svc.DeleteSubnet(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error,
 		})

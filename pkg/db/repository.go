@@ -2,20 +2,22 @@ package db
 
 import (
 	"github.com/jinzhu/gorm"
-	s "github.com/thedevelopnik/netplan/pkg/models"
+	m "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 type NetplanRepository interface {
-	CreateNetworkMap(*s.NetworkMap) error
-	GetNetworkMap(uint) (*s.NetworkMap, error)
-	UpdateNetworkMap(*s.NetworkMap) (*s.NetworkMap, error)
+	CreateNetworkMap(*m.NetworkMap) error
+	GetNetworkMap(uint) (*m.NetworkMap, error)
+	UpdateNetworkMap(*m.NetworkMap) (*m.NetworkMap, error)
 	DeleteNetworkMap(uint) error
-	CreateVPC(*s.VPC) error
-	UpdateVPC(*s.VPC) (*s.VPC, error)
+	CreateVPC(*m.VPC) error
+	UpdateVPC(*m.VPC) (*m.VPC, error)
 	DeleteVPC(uint) error
-	CreateSubnet(*s.Subnet) error
-	UpdateSubnet(*s.Subnet) (*s.Subnet, error)
+	CreateSubnet(*m.Subnet) error
+	UpdateSubnet(*m.Subnet) (*m.Subnet, error)
 	DeleteSubnet(uint) error
+	GetVPCsByNetworkMapID(uint) ([]m.VPC, error)
+	GetSubnetsByVPCID(uint) ([]m.Subnet, error)
 }
 
 func New(db *gorm.DB) NetplanRepository {

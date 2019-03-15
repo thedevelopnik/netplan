@@ -1,11 +1,12 @@
 package db
 
 import (
-	s "github.com/thedevelopnik/netplan/pkg/models"
+	"github.com/pkg/errors"
+	m "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 // VPC actions
-func (r npRepo) CreateVPC(vpc *s.VPC) error {
+func (r npRepo) CreateVPC(vpc *m.VPC) error {
 	// create in the db
 	if err := r.db.Create(&vpc).Error; err != nil {
 		return err
@@ -13,9 +14,9 @@ func (r npRepo) CreateVPC(vpc *s.VPC) error {
 	return nil
 }
 
-func (r npRepo) UpdateVPC(vpc *s.VPC) (*s.VPC, error) {
+func (r npRepo) UpdateVPC(vpc *m.VPC) (*m.VPC, error) {
 	// find the current one matching the one with updated values
-	var update s.VPC
+	var update m.VPC
 	if err := r.db.Where("id = ?", vpc.ID).First(&update).Error; err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func (r npRepo) UpdateVPC(vpc *s.VPC) (*s.VPC, error) {
 
 func (r npRepo) DeleteVPC(id uint) error {
 	// find db ojbect matching the id
-	var vpc s.VPC
+	var vpc m.VPC
 	if err := r.db.Where("id = ?", id).First(&vpc).Error; err != nil {
 		return err
 	}
@@ -51,4 +52,12 @@ func (r npRepo) DeleteVPC(id uint) error {
 	}
 
 	return nil
+}
+
+func (r npRepo) GetVPCsByNetworkMapID(id uint) ([]m.VPC, error) {
+	var vpcs []m.VPC
+	if err := r.db.Where("network_map_id = ?", id).Find(&vpcs).Error; err != nil {
+		return nil, errors.Wrap(err, "repository could not find vpcs matching the network map id in the db")
+	}
+	return vpcs, nil
 }
