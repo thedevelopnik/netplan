@@ -7,7 +7,7 @@ import (
 	s "github.com/thedevelopnik/netplan/structs"
 )
 
-func TestCreateAndDeleteNetworkMap(t *testing.T) {
+func TestCreateNetworkMap(t *testing.T) {
 	nm := s.NetworkMap{
 		Name: "create-test-nm",
 	}
@@ -127,7 +127,82 @@ func TestDeleteNetworkMap(t *testing.T) {
 
 	_, err = repo.GetNetworkMap(nm.ID)
 	if err == nil {
+		t.Error("found a network map that should have been deleted")
+	}
+
+	err = conn.Close()
+	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetNetworkMapWithVPCAndSubnets(t *testing.T) {
+	nm := s.NetworkMap{
+		Name: "full-test-nm",
+	}
+
+	conn, err := Conn()
+	if err != nil {
+		t.Error(err)
+	}
+	repo := New(conn)
+
+	err = repo.CreateNetworkMap(&nm)
+	if err != nil {
+		t.Error(err)
+	}
+
+	vpc := s.VPC{
+		Name:         "full-test-vpc",
+		Access:       "public",
+		Location:     "us-east4",
+		Provider:     "GCP",
+		Env:          "dev",
+		CidrBlock:    "192.168.0.0/16",
+		Type:         "vpc",
+		NetworkMapID: nm.ID,
+	}
+
+	err = repo.CreateVPC(&vpc)
+	if err != nil {
+		t.Error(err)
+	}
+
+	sn := s.Subnet{
+		Name:      "full-test-subnet",
+		Access:    "public",
+		Location:  "us-east4",
+		Provider:  "GCP",
+		Env:       "dev",
+		CidrBlock: "192.168.0.0/24",
+		VPCID:     vpc.ID,
+	}
+
+	err = repo.CreateSubnet(&sn)
+	if err != nil {
+		t.Error(err)
+	}
+
+	retrievedNM, err := repo.GetNetworkMap(nm.ID)
+
+	if len(retrievedNM.VPCs) == 0 {
+		t.Error("network map has no vpcs")
+		return
+	}
+
+	retrievedVPC := retrievedNM.VPCs[0]
+	if strings.Compare(retrievedVPC.Name, "full-test-vpc") != 0 {
+		t.Error("vpc belonging to network map is not the correct vpc")
+	}
+
+	if len(retrievedVPC.Subnets) == 0 {
+		t.Error("vpc has no subnets")
+		return
+	}
+
+	retrievedSubnet := retrievedVPC.Subnets[0]
+	if strings.Compare(retrievedSubnet.Name, "full-test-subnet") != 0 {
+		t.Error("subnet belonging to vpc is not the correct subnet")
 	}
 
 	err = conn.Close()

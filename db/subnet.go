@@ -27,7 +27,6 @@ func (r npRepo) UpdateSubnet(sn *s.Subnet) (*s.Subnet, error) {
 	update.Provider = sn.Provider
 	update.Env = sn.Env
 	update.CidrBlock = sn.CidrBlock
-	update.Type = sn.Type
 	update.VPCID = sn.VPCID
 
 	// save in the db or send error

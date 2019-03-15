@@ -18,6 +18,12 @@ func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
 		})
 	}
 
+	if nmID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "id parameter must be a positive integer",
+		})
+	}
+
 	// get the vpc object from the request, or send error
 	var vpc s.VPC
 	if err := c.ShouldBindJSON(&vpc); err != nil {
@@ -25,7 +31,7 @@ func (svc netplanService) CreateVPCEndpoint(c *gin.Context) {
 			"error": err.Error,
 		})
 	}
-	vpc.NetworkMapID = nmID
+	vpc.NetworkMapID = uint(nmID)
 
 	// create in the db
 	if err := svc.repo.CreateVPC(&vpc); err != nil {

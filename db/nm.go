@@ -16,7 +16,7 @@ func (r npRepo) CreateNetworkMap(nm *s.NetworkMap) error {
 
 func (r npRepo) GetNetworkMap(id uint) (*s.NetworkMap, error) {
 	var nm s.NetworkMap
-	if err := r.db.Where("id = ?", id).First(&nm).Error; err != nil {
+	if err := r.db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&nm).Error; err != nil {
 		return nil, err
 	}
 

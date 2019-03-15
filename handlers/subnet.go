@@ -18,6 +18,12 @@ func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
+	if vpcID <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "vpc id parameter must be a positive integer",
+		})
+	}
+
 	// get the network map object from the request, or send error
 	var sn s.Subnet
 	if err := c.ShouldBindJSON(&sn); err != nil {
@@ -26,7 +32,7 @@ func (svc netplanService) CreateSubnetEndpoint(c *gin.Context) {
 		})
 	}
 
-	sn.VPCID = vpcID
+	sn.VPCID = uint(vpcID)
 
 	// create in the db
 	if err := svc.repo.CreateSubnet(&sn); err != nil {

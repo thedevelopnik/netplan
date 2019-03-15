@@ -13,8 +13,7 @@ type (
 		Provider  string `gorm:"not null"`
 		Env       string `gorm:"not null"`
 		CidrBlock string `gorm:"not null"`
-		Type      string `gorm:"not null"`
-		VPCID     int
+		VPCID     uint
 	}
 
 	// VPC represents a VPC model
@@ -28,7 +27,7 @@ type (
 		CidrBlock    string `gorm:"not null"`
 		Type         string `gorm:"not null"`
 		Subnets      []Subnet
-		NetworkMapID int
+		NetworkMapID uint
 	}
 
 	// NetworkMap represents a network map model
