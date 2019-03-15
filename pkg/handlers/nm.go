@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	s "github.com/thedevelopnik/netplan/structs"
+	s "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 // CreateNetworkMapEndpoint creates a NetworkMap and returns the created value.

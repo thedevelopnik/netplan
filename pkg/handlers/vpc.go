@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	s "github.com/thedevelopnik/netplan/structs"
+	s "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 // CreateVPCEndpoint creates a VPC and returns the created value.

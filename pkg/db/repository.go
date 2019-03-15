@@ -2,7 +2,7 @@ package db
 
 import (
 	"github.com/jinzhu/gorm"
-	s "github.com/thedevelopnik/netplan/structs"
+	s "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 type NetplanRepository interface {

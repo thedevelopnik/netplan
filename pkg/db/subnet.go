@@ -1,7 +1,7 @@
 package db
 
 import (
-	s "github.com/thedevelopnik/netplan/structs"
+	s "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 // Subnet actions

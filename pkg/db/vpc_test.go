@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	s "github.com/thedevelopnik/netplan/structs"
+	s "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 func TestCreateVPC(t *testing.T) {
