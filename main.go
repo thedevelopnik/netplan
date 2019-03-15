@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 
-	database "github.com/thedevelopnik/netplan/db"
-	h "github.com/thedevelopnik/netplan/handlers"
+	database "github.com/thedevelopnik/netplan/pkg/db"
+	h "github.com/thedevelopnik/netplan/pkg/handlers"
 )
 
 func main() {

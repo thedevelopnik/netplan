@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/thedevelopnik/netplan/db"
+	"github.com/thedevelopnik/netplan/pkg/db"
 )
 
 type NetplanService interface {
@@ -27,5 +27,3 @@ func New(repo db.NetplanRepository) NetplanService {
 type netplanService struct {
 	repo db.NetplanRepository
 }
-
-
