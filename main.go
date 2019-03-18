@@ -35,19 +35,19 @@ func main() {
 		// NetworkMap Endpoints
 		v1.POST("/networkmap", t.CreateNetworkMapEndpoint)
 		v1.GET("/networkmap", t.GetAllNetworkMapsEndpoint)
-		v1.GET("/networkmap/:id", t.GetNetworkMapEndpoint)
+		v1.GET("/networkmap/:nmid", t.GetNetworkMapEndpoint)
 		v1.PUT("/networkmap", t.UpdateNetworkMapEndpoint)
-		v1.DELETE("/networkmap/:id", t.DeleteNetworkMapEndpoint)
+		v1.DELETE("/networkmap/:nmid", t.DeleteNetworkMapEndpoint)
 
 		// VPC Endpoints
 		v1.POST("/networkmap/:nmid/vpc", t.CreateVPCEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:id", t.UpdateVPCEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:id", t.DeleteVPCEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc", t.UpdateVPCEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:vpcid", t.DeleteVPCEndpoint)
 
 		// Subnet Endpoints
 		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", t.CreateSubnetEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", t.UpdateSubnetEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", t.DeleteSubnetEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:vpcid/subnet", t.UpdateSubnetEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:snid", t.DeleteSubnetEndpoint)
 	}
 	if err := r.Run(); err != nil {
 		log.Fatalln(err)

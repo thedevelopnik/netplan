@@ -69,7 +69,7 @@ func (h netplanHTTP) UpdateSubnetEndpoint(c *gin.Context) {
 
 // DeleteSubnetEndpoint deletes a Subnet given an id.
 func (h netplanHTTP) DeleteSubnetEndpoint(c *gin.Context) {
-	id, err := convertParamToInt("id", c)
+	id, err := convertParamToInt("snid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,

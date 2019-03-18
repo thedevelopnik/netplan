@@ -69,7 +69,7 @@ func (h netplanHTTP) UpdateVPCEndpoint(c *gin.Context) {
 
 // DeleteVPCEndpoint deletes a VPC given an id.
 func (h netplanHTTP) DeleteVPCEndpoint(c *gin.Context) {
-	id, err := convertParamToInt("id", c)
+	id, err := convertParamToInt("vpcid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,

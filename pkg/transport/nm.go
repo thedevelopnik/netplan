@@ -34,7 +34,7 @@ func (h netplanHTTP) CreateNetworkMapEndpoint(c *gin.Context) {
 
 // GetNetworkMapEndpoint gets a NetworkMap struct from a given id.
 func (h netplanHTTP) GetNetworkMapEndpoint(c *gin.Context) {
-	id, err := convertParamToInt("id", c)
+	id, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,
@@ -94,7 +94,7 @@ func (h netplanHTTP) UpdateNetworkMapEndpoint(c *gin.Context) {
 
 // DeleteNetworkMapEndpoint deletes a NetworkMap given an id.
 func (h netplanHTTP) DeleteNetworkMapEndpoint(c *gin.Context) {
-	id, err := convertParamToInt("id", c)
+	id, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error,

@@ -96,19 +96,32 @@
         </v-form>
       </v-flex>
       <v-flex xs12 class="mt-5">
-        <h2>VPCs</h2>
+        <h2>Network Maps</h2>
         <v-data-table
-          :headers="headers"
-          :items="networks.vpcs"
+          :headers="networkMapHeaders"
+          :items="networkMaps"
           class="elevation-1"
         >
           <template slot="items" slot-scope="props">
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.cidrBlock }}</td>
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.type }}</td>
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.env }}</td>
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.name }}</td>
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.provider }}</td>
-            <td @click="setCurrentVPC(props.item)">{{ props.item.metadata.location }}</td>
+            <td @click="setCurrentNetworkMap(props.item)">{{ props.item.ID }}</td>
+            <td @click="setCurrentNetworkMap(props.item)">{{ props.item.Name }}</td>
+          </template>
+        </v-data-table>
+      </v-flex>
+      <v-flex xs12 class="mt-5">
+        <h2>VPCs</h2>
+        <v-data-table
+          :headers="headers"
+          :items="currentNetworkMap.VPCs"
+          class="elevation-1"
+        >
+          <template slot="items" slot-scope="props">
+            <td @click="setCurrentVPC(props.item)">{{ props.item.CidrBlock }}</td>
+            <td @click="setCurrentVPC(props.item)">{{ props.item.Type }}</td>
+            <td @click="setCurrentVPC(props.item)">{{ props.item.Env }}</td>
+            <td @click="setCurrentVPC(props.item)">{{ props.item.Name }}</td>
+            <td @click="setCurrentVPC(props.item)">{{ props.item.Provider }}</td>
+            <td @click="setCurrentVPC(props.item)">{{ props.item.Location }}</td>
           </template>
         </v-data-table>
       </v-flex>
@@ -120,12 +133,12 @@
           class="elevation-1"
         >
           <template slot="items" slot-scope="props" @click="setCurrentVPC(props.item)">
-            <td>{{ props.item.metadata.cidrBlock }}</td>
-            <td>{{ props.item.metadata.type }}</td>
-            <td>{{ props.item.metadata.env }}</td>
-            <td>{{ props.item.metadata.name }}</td>
-            <td>{{ props.item.metadata.provider }}</td>
-            <td>{{ props.item.metadata.location }}</td>
+            <td>{{ props.item.CidrBlock }}</td>
+            <td>{{ props.item.Type }}</td>
+            <td>{{ props.item.Env }}</td>
+            <td>{{ props.item.Name }}</td>
+            <td>{{ props.item.Provider }}</td>
+            <td>{{ props.item.Location }}</td>
           </template>
         </v-data-table>
       </v-flex>
@@ -134,26 +147,36 @@
 </template>
 
 <script>
-import { initializeExistingNetworks } from '../models/networks'
+// import { initializeExistingNetworks } from '../models/networks'
 import { addSubnet, addVPC, createMetadata } from '../models/helpers'
+import { getAllNetworkMaps, getNetworkMap } from '../api/networkMaps'
 
 export default {
   async mounted () {
     try {
-      const networks = await initializeExistingNetworks()
-      this.networks = networks
-      this.vpcNames = networks.vpcs.map((vpc) => {
-        return `${vpc.metadata.name}-${vpc.metadata.env}`
-      })
+      const networkMaps = await getAllNetworkMaps()
+      this.networkMaps = networkMaps
+      // this.networks = networks
+      // this.vpcNames = networks.vpcs.map((vpc) => {
+      //   return `${vpc.metadata.name}-${vpc.metadata.env}`
+      // })
     } catch (err) {
       console.error(err)
     }
   },
   methods: {
-    setCurrentVPC(vpc) {
+    async setCurrentNetworkMap (nm) {
+      try {
+        const networkMap = await getNetworkMap(nm.ID)
+        this.currentNetworkMap = networkMap
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    setCurrentVPC (vpc) {
       this.currentVPC = vpc
     },
-    async addNewVpc() {
+    async addNewVpc () {
       const metadata = createMetadata(
         this.vpcName,
         this.vpcAccess,
@@ -173,7 +196,7 @@ export default {
         console.error(err)
       }
     },
-    addNewSubnet() {
+    addNewSubnet () {
       const vpcIdSplit = this.subnetVPC.split('-')
       const vpc = this.networks.vpcs.filter(vpc => {
         return vpc.metadata.name === vpcIdSplit[0] && vpc.metadata.env === vpcIdSplit[1]
@@ -205,6 +228,21 @@ export default {
       subnetCidrBlock: '',
       subnetVPC: '',
       currentVPC: {},
+      currentNetworkMap: {},
+      networkMapHeaders: [
+        {
+          text: 'ID',
+          align: 'left',
+          sortable: false,
+          value: 'id'
+        },
+        {
+          text: 'Name',
+          align: 'left',
+          sortable: true,
+          value: 'name'
+        }
+      ],
       headers: [
         {
           text: 'CIDR Block',
@@ -238,7 +276,8 @@ export default {
           value: 'location'
         }
       ],
-      networks: {}
+      networks: {},
+      networkMaps: []
     }
   }
 }
