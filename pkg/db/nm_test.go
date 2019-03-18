@@ -1,6 +1,7 @@
 package db
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -38,7 +39,7 @@ func TestCreateNetworkMap(t *testing.T) {
 
 func TestGetNetworkMap(t *testing.T) {
 	nm := s.NetworkMap{
-		Name: "delete-test-nm",
+		Name: "get-test-nm",
 	}
 
 	conn, err := Conn()
@@ -67,6 +68,44 @@ func TestGetNetworkMap(t *testing.T) {
 	err = conn.Close()
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetAllNetworkMaps(t *testing.T) {
+	nm1 := s.NetworkMap{
+		Name: "get-test-nm-1",
+	}
+	nm2 := s.NetworkMap{
+		Name: "get-test-nm-2",
+	}
+
+	conn, err := Conn()
+	if err != nil {
+		t.Error(err)
+	}
+	repo := New(conn)
+
+	err = repo.CreateNetworkMap(&nm1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = repo.CreateNetworkMap(&nm2)
+	if err != nil {
+		t.Error(err)
+	}
+
+	networkMaps, err := repo.GetAllNetworkMaps()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(networkMaps) < 2 {
+		t.Errorf("expected networkmaps length to be at least 2, instead it was %d", len(networkMaps))
+	}
+
+	if reflect.TypeOf(networkMaps) != reflect.TypeOf([]s.NetworkMap{}) {
+		t.Errorf("expected a slice of networkMaps by value, got %v", reflect.TypeOf(networkMaps))
 	}
 }
 

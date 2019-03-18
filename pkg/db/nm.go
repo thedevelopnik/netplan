@@ -1,11 +1,12 @@
 package db
 
 import (
-	s "github.com/thedevelopnik/netplan/pkg/models"
+	"github.com/pkg/errors"
+	m "github.com/thedevelopnik/netplan/pkg/models"
 )
 
 // NetworkMap actions
-func (r npRepo) CreateNetworkMap(nm *s.NetworkMap) error {
+func (r npRepo) CreateNetworkMap(nm *m.NetworkMap) error {
 	// create in the db
 	if err := r.db.Create(&nm).Error; err != nil {
 		return err
@@ -14,8 +15,8 @@ func (r npRepo) CreateNetworkMap(nm *s.NetworkMap) error {
 	return nil
 }
 
-func (r npRepo) GetNetworkMap(id uint) (*s.NetworkMap, error) {
-	var nm s.NetworkMap
+func (r npRepo) GetNetworkMap(id uint) (*m.NetworkMap, error) {
+	var nm m.NetworkMap
 	if err := r.db.Set("gorm:auto_preload", true).Where("id = ?", id).First(&nm).Error; err != nil {
 		return nil, err
 	}
@@ -23,9 +24,17 @@ func (r npRepo) GetNetworkMap(id uint) (*s.NetworkMap, error) {
 	return &nm, nil
 }
 
-func (r npRepo) UpdateNetworkMap(nm *s.NetworkMap) (*s.NetworkMap, error) {
+func (r npRepo) GetAllNetworkMaps() ([]m.NetworkMap, error) {
+	var networkMaps []m.NetworkMap
+	if err := r.db.Find(&networkMaps).Error; err != nil {
+		return nil, errors.Wrap(err, "could not retrieve list network maps")
+	}
+	return networkMaps, nil
+}
+
+func (r npRepo) UpdateNetworkMap(nm *m.NetworkMap) (*m.NetworkMap, error) {
 	// find the current one matching the one with updated values
-	var update s.NetworkMap
+	var update m.NetworkMap
 	if err := r.db.Where("id = ?", nm.ID).First(&update).Error; err != nil {
 		return nil, err
 	}
@@ -43,7 +52,7 @@ func (r npRepo) UpdateNetworkMap(nm *s.NetworkMap) (*s.NetworkMap, error) {
 
 func (r npRepo) DeleteNetworkMap(id uint) error {
 	// find db ojbect matching the id
-	var nm s.NetworkMap
+	var nm m.NetworkMap
 	if err := r.db.Where("id = ?", id).First(&nm).Error; err != nil {
 		return err
 	}

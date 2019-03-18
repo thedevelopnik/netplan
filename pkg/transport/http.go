@@ -1,4 +1,4 @@
-package handlers
+package transport
 
 import (
 	"github.com/gin-gonic/gin"
@@ -8,6 +8,7 @@ import (
 type NetplanHTTP interface {
 	CreateNetworkMapEndpoint(*gin.Context)
 	GetNetworkMapEndpoint(*gin.Context)
+	GetAllNetworkMapsEndpoint(*gin.Context)
 	UpdateNetworkMapEndpoint(*gin.Context)
 	DeleteNetworkMapEndpoint(*gin.Context)
 	CreateVPCEndpoint(*gin.Context)

@@ -22,6 +22,14 @@ func (svc netplan) GetNetworkMap(id uint) (*m.NetworkMap, error) {
 	return nm, nil
 }
 
+func (svc netplan) GetAllNetworkMaps() ([]m.NetworkMap, error) {
+	networkMaps, err := svc.repo.GetAllNetworkMaps()
+	if err != nil {
+		return nil, errors.Wrap(err, "netplan service could not get list of network maps")
+	}
+	return networkMaps, nil
+}
+
 func (svc netplan) UpdateNetworkMap(nm *m.NetworkMap) (*m.NetworkMap, error) {
 	update, err := svc.repo.UpdateNetworkMap(nm)
 	if err != nil {

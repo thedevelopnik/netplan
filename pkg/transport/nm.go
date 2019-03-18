@@ -1,7 +1,9 @@
-package handlers
+package transport
 
 import (
 	"net/http"
+
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
 	s "github.com/thedevelopnik/netplan/pkg/models"
@@ -54,6 +56,18 @@ func (h netplanHTTP) GetNetworkMapEndpoint(c *gin.Context) {
 
 	// return it in the response
 	c.JSON(http.StatusOK, nm)
+}
+
+// GetAllNetworkMapsEndpoint retrieves all network maps from the database and returns them.
+func (h netplanHTTP) GetAllNetworkMapsEndpoint(c *gin.Context) {
+	networkMaps, err := h.svc.GetAllNetworkMaps()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": errors.WithStack(err),
+		})
+	}
+
+	c.JSON(http.StatusOK, networkMaps)
 }
 
 // UpdateNetworkMapEndpoint updates the name of a

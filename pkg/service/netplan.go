@@ -10,6 +10,7 @@ import (
 type NetPlan interface {
 	CreateNetworkMap(*m.NetworkMap) error
 	GetNetworkMap(uint) (*m.NetworkMap, error)
+	GetAllNetworkMaps() ([]m.NetworkMap, error)
 	UpdateNetworkMap(*m.NetworkMap) (*m.NetworkMap, error)
 	DeleteNetworkMap(uint) error
 	CreateVPC(*m.VPC) error

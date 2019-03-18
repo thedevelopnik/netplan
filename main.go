@@ -7,9 +7,16 @@ import (
 	"github.com/jinzhu/gorm"
 
 	database "github.com/thedevelopnik/netplan/pkg/db"
-	h "github.com/thedevelopnik/netplan/pkg/handlers"
-	svc "github.com/thedevelopnik/netplan/pkg/service"
+	"github.com/thedevelopnik/netplan/pkg/service"
+	"github.com/thedevelopnik/netplan/pkg/transport"
 )
+
+// need to:
+// think critically about error handling from db up to response, especially in instances with multiple possible errors
+// test the new service package
+// retest the transport/handler package
+// have better logging, probably logrus
+// do better config, especially of db values
 
 func main() {
 	db, err := database.Conn()
@@ -18,8 +25,8 @@ func main() {
 	}
 
 	repo := database.New(db)
-	svc := svc.New(repo)
-	handler := h.New(svc)
+	svc := service.New(repo)
+	t := transport.New(svc)
 
 	r := gin.Default()
 	r.Use(dbMiddleware(db))
@@ -29,20 +36,21 @@ func main() {
 	v1 := r.Group("/v1")
 	{
 		// NetworkMap Endpoints
-		v1.POST("/networkmap", handler.CreateNetworkMapEndpoint)
-		v1.GET("/networkmap/:id", handler.GetNetworkMapEndpoint)
-		v1.PUT("/networkmap", handler.UpdateNetworkMapEndpoint)
-		v1.DELETE("/networkmap/:id", handler.DeleteNetworkMapEndpoint)
+		v1.POST("/networkmap", t.CreateNetworkMapEndpoint)
+		v1.GET("/networkmap", t.GetAllNetworkMapsEndpoint)
+		v1.GET("/networkmap/:id", t.GetNetworkMapEndpoint)
+		v1.PUT("/networkmap", t.UpdateNetworkMapEndpoint)
+		v1.DELETE("/networkmap/:id", t.DeleteNetworkMapEndpoint)
 
 		// VPC Endpoints
-		v1.POST("/networkmap/:nmid/vpc", handler.CreateVPCEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:id", handler.UpdateVPCEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:id", handler.DeleteVPCEndpoint)
+		v1.POST("/networkmap/:nmid/vpc", t.CreateVPCEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:id", t.UpdateVPCEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:id", t.DeleteVPCEndpoint)
 
 		// Subnet Endpoints
-		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", handler.CreateSubnetEndpoint)
-		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", handler.UpdateSubnetEndpoint)
-		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", handler.DeleteSubnetEndpoint)
+		v1.POST("/networkmap/:nmid/vpc/:vpcid/subnet", t.CreateSubnetEndpoint)
+		v1.PUT("/networkmap/:nmid/vpc/:pvcid/subnet/:id", t.UpdateSubnetEndpoint)
+		v1.DELETE("/networkmap/:nmid/vpc/:vpcid/subnet/:id", t.DeleteSubnetEndpoint)
 	}
 	if err := r.Run(); err != nil {
 		log.Fatalln(err)
