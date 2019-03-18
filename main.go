@@ -4,8 +4,6 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
 	database "github.com/thedevelopnik/netplan/pkg/db"
 	"github.com/thedevelopnik/netplan/pkg/service"
 	"github.com/thedevelopnik/netplan/pkg/transport"
@@ -29,7 +27,6 @@ func main() {
 	t := transport.New(svc)
 
 	r := gin.Default()
-	r.Use(dbMiddleware(db))
 	r.StaticFile("/app.js", "./dist/app.js")
 	r.StaticFile("/about.js", "./dist/about.js")
 	r.StaticFile("/", "./dist/index.html")
@@ -55,11 +52,4 @@ func main() {
 	if err := r.Run(); err != nil {
 		log.Fatalln(err)
 	} // listen and serve on 0.0.0.0:8080
-}
-
-func dbMiddleware(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("db", db)
-		c.Next()
-	}
 }
