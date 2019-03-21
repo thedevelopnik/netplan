@@ -4,6 +4,26 @@
       text-xs-center
       wrap
     >
+      <v-flex xs12 md2 class="white pa-2">
+        <h2>Add New VPC</h2>
+        <v-form
+          ref="vpcForm"
+          lazy-validation
+        >
+          <v-text-field
+            v-model="networkMapName"
+            label="Name"
+            required
+          >
+          </v-text-field>
+          <v-btn
+            color="primary"
+            @click="addNewNetworkMap(networkMapName)"
+          >
+            Add
+          </v-btn>
+        </v-form>
+      </v-flex>
       <v-flex xs12 md5 class="white pa-2">
         <h2>Add New VPC</h2>
         <v-form
@@ -129,10 +149,10 @@
         <h2>Subnets for selected VPC</h2>
         <v-data-table
           :headers="headers"
-          :items="currentVPC.subnets"
+          :items="currentVPC.Subnets"
           class="elevation-1"
         >
-          <template slot="items" slot-scope="props" @click="setCurrentVPC(props.item)">
+          <template slot="items" slot-scope="props">
             <td>{{ props.item.CidrBlock }}</td>
             <td>{{ props.item.Type }}</td>
             <td>{{ props.item.Env }}</td>
@@ -148,18 +168,16 @@
 
 <script>
 // import { initializeExistingNetworks } from '../models/networks'
-import { addSubnet, addVPC, createMetadata } from '../models/helpers'
-import { getAllNetworkMaps, getNetworkMap } from '../api/networkMaps'
+import { newVPC, newSubnet, newNetworkMap } from '../models/helpers'
+import { getAllNetworkMaps, getNetworkMap, createNetworkMap } from '../api/networkMaps'
+import { createVPC } from '../api/vpcs'
+import { createSubnet } from '../api/subnets'
 
 export default {
   async mounted () {
     try {
       const networkMaps = await getAllNetworkMaps()
       this.networkMaps = networkMaps
-      // this.networks = networks
-      // this.vpcNames = networks.vpcs.map((vpc) => {
-      //   return `${vpc.metadata.name}-${vpc.metadata.env}`
-      // })
     } catch (err) {
       console.error(err)
     }
@@ -173,45 +191,68 @@ export default {
         console.error(err)
       }
     },
+    async addNewNetworkMap (Name) {
+      try {
+        const networkMap = newNetworkMap(Name)
+        const created = await createNetworkMap(networkMap)
+        this.setCurrentNetworkMap(created)
+      } catch (err) {
+        console.error(err)
+      }
+    },
     setCurrentVPC (vpc) {
       this.currentVPC = vpc
     },
     async addNewVpc () {
-      const metadata = createMetadata(
+      let vpc = newVPC(
         this.vpcName,
         this.vpcAccess,
         this.vpcLocation,
         this.vpcProvider,
         this.vpcEnv,
-        'vpc',
-        this.vpcCidrBlock
+        this.vpcCidrBlock,
+        this.type,
+        this.currentNetworkMap.ID
       )
       try {
-        const networks = await addVPC(this.networks, metadata)
-        this.networks = networks
-        this.vpcNames = networks.vpcs.map((vpc) => {
-          return `${vpc.metadata.name}-${vpc.metadata.env}`
-        })
+        vpc = await createVPC(vpc)
+      } catch (err) {
+        console.error(err)
+      }
+      try {
+        const networkMap = await getNetworkMap(vpc.NetworkMapID)
+        this.currentNetworkMap = networkMap
+        this.currentVPC = vpc
       } catch (err) {
         console.error(err)
       }
     },
-    addNewSubnet () {
+    async addNewSubnet () {
       const vpcIdSplit = this.subnetVPC.split('-')
-      const vpc = this.networks.vpcs.filter(vpc => {
-        return vpc.metadata.name === vpcIdSplit[0] && vpc.metadata.env === vpcIdSplit[1]
+      const vpc = this.currentNetworkMap.VPCs.filter(vpc => {
+        return vpc.Name === vpcIdSplit[0] && vpc.metadata.env === vpcIdSplit[1]
       })[0]
-      const metadata = createMetadata(
+      let subnet = newSubnet(
         this.subnetName,
         this.subnetAccess,
         vpc.metadata.location,
         vpc.metadata.provider,
         vpc.metadata.env,
-        'subnet',
-        this.subnetCidrBlock
+        this.subnetCidrBlock,
+        vpc.ID
       )
-      const networks = addSubnet(metadata, vpcIdSplit[0], vpcIdSplit[1], this.networks)
-      this.networks = networks
+      try {
+        subnet = await createSubnet(subnet)
+      } catch (err) {
+        console.error(err)
+      }
+      try {
+        await this.setCurrentNetworkMap(vpc.NetworkMapID)
+        this.currentVPC = vpc
+        this.currentSubnet = subnet
+      } catch (err) {
+        console.error(err)
+      }
     }
   },
   data: () => {
@@ -223,12 +264,14 @@ export default {
       vpcLocation: '',
       vpcCidrBlock: '',
       vpcNames: [],
+      networkMapName: '',
       subnetName: '',
       subnetAccess: '',
       subnetCidrBlock: '',
       subnetVPC: '',
       currentVPC: {},
       currentNetworkMap: {},
+      currentSubnet: {},
       networkMapHeaders: [
         {
           text: 'ID',

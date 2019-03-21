@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/thedevelopnik/netplan/pkg/config"
+
 	"github.com/gin-gonic/gin"
 	database "github.com/thedevelopnik/netplan/pkg/db"
 	"github.com/thedevelopnik/netplan/pkg/service"
@@ -17,7 +19,9 @@ import (
 // do better config, especially of db values
 
 func main() {
-	db, err := database.Conn()
+	conf := config.New()
+
+	db, err := database.Conn(conf.GetDBConfig())
 	if err != nil {
 		log.Fatalln(err)
 	}

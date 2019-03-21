@@ -14,22 +14,25 @@ func (h netplanHTTP) CreateSubnetEndpoint(c *gin.Context) {
 	vpcID, err := convertParamToInt("vpcid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	if vpcID <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "vpc id parameter must be a positive integer",
 		})
+		return
 	}
 
 	// get the network map object from the request, or send error
 	var sn s.Subnet
 	if err := c.ShouldBindJSON(&sn); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	sn.VPCID = uint(vpcID)
@@ -37,8 +40,9 @@ func (h netplanHTTP) CreateSubnetEndpoint(c *gin.Context) {
 	// create in the db
 	if err := h.svc.CreateSubnet(&sn); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send full created database object back
@@ -52,15 +56,17 @@ func (h netplanHTTP) UpdateSubnetEndpoint(c *gin.Context) {
 	var sn s.Subnet
 	if err := c.ShouldBindJSON(&sn); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	update, err := h.svc.UpdateSubnet(&sn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send back updated value
@@ -72,21 +78,24 @@ func (h netplanHTTP) DeleteSubnetEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("snid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	if id <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "id parameter must be a positive integer",
 		})
+		return
 	}
 
 	// delete the object
 	if err := h.svc.DeleteSubnet(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send back a no content response

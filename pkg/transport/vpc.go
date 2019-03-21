@@ -14,32 +14,35 @@ func (h netplanHTTP) CreateVPCEndpoint(c *gin.Context) {
 	nmID, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	if nmID <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "id parameter must be a positive integer",
 		})
+		return
 	}
 
 	// get the vpc object from the request, or send error
 	var vpc s.VPC
 	if err := c.ShouldBindJSON(&vpc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 	vpc.NetworkMapID = uint(nmID)
 
 	// create in the db
 	if err := h.svc.CreateVPC(&vpc); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
 		})
+		return
 	}
-
 	// send full created database object back
 	c.JSON(http.StatusCreated, vpc)
 }
@@ -51,7 +54,7 @@ func (h netplanHTTP) UpdateVPCEndpoint(c *gin.Context) {
 	var vpc s.VPC
 	if err := c.ShouldBindJSON(&vpc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
 	}
 
@@ -59,7 +62,7 @@ func (h netplanHTTP) UpdateVPCEndpoint(c *gin.Context) {
 	update, err := h.svc.UpdateVPC(&vpc)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
 	}
 
@@ -72,7 +75,7 @@ func (h netplanHTTP) DeleteVPCEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("vpcid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
 	}
 
@@ -85,7 +88,7 @@ func (h netplanHTTP) DeleteVPCEndpoint(c *gin.Context) {
 	// delete the object
 	if err := h.svc.DeleteVPC(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
 	}
 

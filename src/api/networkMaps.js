@@ -2,8 +2,8 @@ import axios from './axios'
 
 export async function getAllNetworkMaps () {
   try {
-    const networkMaps = await axios.get('/networkmap')
-    return networkMaps.data
+    const res = await axios.get('/networkmap')
+    return res.data
   } catch (err) {
     throw new Error(err)
   }
@@ -11,8 +11,18 @@ export async function getAllNetworkMaps () {
 
 export async function getNetworkMap (id) {
   try {
-    const networkMap = await axios.get(`/networkmap/${id}`)
-    return networkMap.data
+    const res = await axios.get(`/networkmap/${id}`)
+    return res.data
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+export async function createNetworkMap (networkMap) {
+  console.log(networkMap)
+  try {
+    const res = await axios.post('/networkmap', networkMap)
+    return res.data
   } catch (err) {
     throw new Error(err)
   }

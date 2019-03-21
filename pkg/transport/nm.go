@@ -17,15 +17,17 @@ func (h netplanHTTP) CreateNetworkMapEndpoint(c *gin.Context) {
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// create in the db
 	if err := h.svc.CreateNetworkMap(&nm); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send full created database object back
@@ -37,21 +39,24 @@ func (h netplanHTTP) GetNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	if id <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "id parameter must be a positive integer",
 		})
+		return
 	}
 
 	nm, err := h.svc.GetNetworkMap(uint(id))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// return it in the response
@@ -65,6 +70,7 @@ func (h netplanHTTP) GetAllNetworkMapsEndpoint(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": errors.WithStack(err),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, networkMaps)
@@ -77,15 +83,17 @@ func (h netplanHTTP) UpdateNetworkMapEndpoint(c *gin.Context) {
 	var nm s.NetworkMap
 	if err := c.ShouldBindJSON(&nm); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	update, err := h.svc.UpdateNetworkMap(&nm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send back updated value
@@ -97,21 +105,24 @@ func (h netplanHTTP) DeleteNetworkMapEndpoint(c *gin.Context) {
 	id, err := convertParamToInt("nmid", c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	if id <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "id parameter must be a positive integer",
 		})
+		return
 	}
 
 	// find db ojbect matching the id
 	if err := h.svc.DeleteNetworkMap(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error,
+			"error": err,
 		})
+		return
 	}
 
 	// send back a no content response
