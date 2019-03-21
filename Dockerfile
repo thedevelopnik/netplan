@@ -1,5 +1,7 @@
 FROM golang:1.12.1-alpine3.9
 
+ENV ENV production
+
 RUN apk add --update nodejs npm curl git
 
 RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
