@@ -168,10 +168,9 @@
 
 <script>
 // import { initializeExistingNetworks } from '../models/networks'
-import { newVPC, newSubnet, newNetworkMap } from '../models/helpers'
-import { getAllNetworkMaps, getNetworkMap, createNetworkMap } from '../api/networkMaps'
-import { createVPC } from '../api/vpcs'
-import { createSubnet } from '../api/subnets'
+import { getAllNetworkMaps, getNetworkMap, createNetworkMap, newNetworkMap } from '../api/networkMaps'
+import { createVPC, newVPC } from '../api/vpcs'
+import { createSubnet, newSubnet } from '../api/subnets'
 
 export default {
   async mounted () {

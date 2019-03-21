@@ -1,5 +1,11 @@
 import axios from './axios'
 
+export function newNetworkMap (Name) {
+  return {
+    Name
+  }
+}
+
 export async function getAllNetworkMaps () {
   try {
     const res = await axios.get('/networkmap')
