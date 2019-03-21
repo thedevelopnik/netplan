@@ -167,7 +167,6 @@
 </template>
 
 <script>
-// import { initializeExistingNetworks } from '../models/networks'
 import { getAllNetworkMaps, getNetworkMap, createNetworkMap, newNetworkMap } from '../api/networkMaps'
 import { createVPC, newVPC } from '../api/vpcs'
 import { createSubnet, newSubnet } from '../api/subnets'
