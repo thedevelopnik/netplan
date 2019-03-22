@@ -1,4 +1,4 @@
-FROM golang:1.12.1-alpine3.9
+FROM golang:1.12.1-alpine3.9 as builder
 
 ENV ENV production
 
@@ -22,6 +22,10 @@ RUN go build .
 
 RUN chmod +x netplan
 
-RUN ls
+FROM alpine:3.9
+
+COPY --from=builder /go/src/github.com/thedevelopnik/netplan/dist ./dist
+
+COPY --from=builder /go/src/github.com/thedevelopnik/netplan/netplan .
 
 CMD ./netplan

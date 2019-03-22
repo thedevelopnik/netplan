@@ -1,11 +1,37 @@
 <template>
   <v-container>
     <v-layout
+      align-content-space-around
+      justify-space-around
+      mb-3
+    >
+      <v-card>
+        <v-card-title>Current Network Map</v-card-title>
+        <v-card-content>
+          {{ currentNetworkMap.Name }}
+        </v-card-content>
+      </v-card>
+      <v-card>
+        <v-card-title>Current VPC</v-card-title>
+        <v-card-content>
+          {{ currentVPC.Name }} - {{ currentVPC.CidrBlock }}
+        </v-card-content>
+      </v-card>
+      <v-card>
+        <v-card-title>Current Subnet</v-card-title>
+        <v-card-content>
+          {{ currentSubnet.Name }} - {{ currentSubnet.CidrBlock }}
+        </v-card-content>
+      </v-card>
+    </v-layout>
+    <v-layout
       text-xs-center
+      align-content-space-around
+      justify-space-around
       wrap
     >
-      <v-flex xs12 md2 class="white pa-2">
-        <h2>Add New VPC</h2>
+      <v-flex xs12 md3 class="white pa-2">
+        <h2>Add Network Map</h2>
         <v-form
           ref="vpcForm"
           lazy-validation
@@ -24,8 +50,8 @@
           </v-btn>
         </v-form>
       </v-flex>
-      <v-flex xs12 md5 class="white pa-2">
-        <h2>Add New VPC</h2>
+      <v-flex xs12 md3 class="white pa-2">
+        <h2>Add VPC</h2>
         <v-form
           ref="vpcForm"
           lazy-validation
@@ -74,10 +100,8 @@
           </v-btn>
         </v-form>
       </v-flex>
-      <v-flex xs0 md1>
-      </v-flex>
-      <v-flex xs12 md5 class="white pa-2">
-        <h2>Add New Subnet</h2>
+      <v-flex xs12 md3 class="white pa-2">
+        <h2>Add Subnet</h2>
         <v-form
           ref="subnetForm"
           lazy-validation
@@ -94,13 +118,6 @@
             required
           >
           </v-text-field>
-          <v-select
-            v-model="subnetVPC"
-            label="Parent VPC"
-            required
-            :items="vpcNames"
-          >
-          </v-select>
           <v-text-field
             v-model="subnetCidrBlock"
             label="CIDR Block"
@@ -183,8 +200,7 @@ export default {
   methods: {
     async setCurrentNetworkMap (nm) {
       try {
-        const networkMap = await getNetworkMap(nm.ID)
-        this.currentNetworkMap = networkMap
+        this.currentNetworkMap = await getNetworkMap(nm.ID)
       } catch (err) {
         console.error(err)
       }
@@ -220,24 +236,19 @@ export default {
       try {
         const networkMap = await getNetworkMap(vpc.NetworkMapID)
         this.currentNetworkMap = networkMap
-        this.currentVPC = vpc
       } catch (err) {
         console.error(err)
       }
     },
     async addNewSubnet () {
-      const vpcIdSplit = this.subnetVPC.split('-')
-      const vpc = this.currentNetworkMap.VPCs.filter(vpc => {
-        return vpc.Name === vpcIdSplit[0] && vpc.metadata.env === vpcIdSplit[1]
-      })[0]
       let subnet = newSubnet(
         this.subnetName,
         this.subnetAccess,
-        vpc.metadata.location,
-        vpc.metadata.provider,
-        vpc.metadata.env,
+        this.currentVPC.Location,
+        this.currentVPC.Provider,
+        this.currentVPC.Env,
         this.subnetCidrBlock,
-        vpc.ID
+        this.currentVPC.ID
       )
       try {
         subnet = await createSubnet(subnet)
@@ -245,8 +256,7 @@ export default {
         console.error(err)
       }
       try {
-        await this.setCurrentNetworkMap(vpc.NetworkMapID)
-        this.currentVPC = vpc
+        await this.setCurrentNetworkMap(this.currentVPC.NetworkMapID)
         this.currentSubnet = subnet
       } catch (err) {
         console.error(err)
@@ -262,6 +272,7 @@ export default {
       vpcLocation: '',
       vpcCidrBlock: '',
       vpcNames: [],
+      vpcNetworkMap: '',
       networkMapName: '',
       subnetName: '',
       subnetAccess: '',
