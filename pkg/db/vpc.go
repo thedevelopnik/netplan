@@ -61,3 +61,11 @@ func (r npRepo) GetVPCsByNetworkMapID(id uint) ([]m.VPC, error) {
 	}
 	return vpcs, nil
 }
+
+func (r npRepo) GetVPCByID(id uint) (m.VPC, error) {
+	var vpcs []m.VPC
+	if err := r.db.Where("id = ?", id).Find(&vpcs).Error; err != nil {
+		return m.VPC{}, errors.Wrap(err, "repository could not find vpc matching the vpic id")
+	}
+	return vpcs[0], nil
+}

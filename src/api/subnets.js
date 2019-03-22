@@ -14,7 +14,7 @@ export function newSubnet (Name, Access, Location, Provider, Env, CidrBlock, VPC
 
 export async function createSubnet (subnet) {
   try {
-    const res = await axios.post(`/v1/networkmap/0/vpc/${subnet.VPCID}/subnet`, subnet)
+    const res = await axios.post(`/networkmap/0/vpc/${subnet.VPCID}/subnet`, subnet)
     return res.data
   } catch (err) {
     throw new Error(err)

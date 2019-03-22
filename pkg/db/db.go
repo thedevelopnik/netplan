@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -18,10 +19,10 @@ func Conn(conf config.DBConfig) (*gorm.DB, error) {
 		conf.Password,
 		conf.SSLMode,
 	)
-	fmt.Println(args)
+	time.Sleep(5 * time.Second)
 	db, err := gorm.Open("postgres", args)
 	if err != nil {
-		return nil, err
+		return nil, *&err
 	}
 	db.AutoMigrate(&s.Subnet{}, &s.VPC{}, &s.NetworkMap{})
 	return db, nil

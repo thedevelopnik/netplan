@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/pkg/errors"
 	m "github.com/thedevelopnik/netplan/pkg/models"
 )
@@ -10,7 +8,20 @@ import (
 func (svc netplan) CreateSubnet(subnet *m.Subnet) error {
 	subnets, err := svc.repo.GetSubnetsByVPCID(subnet.VPCID)
 	if err != nil {
-		fmt.Println("no existing subnets found for vpc")
+		return errors.Wrap(err, "no existing subnets found for vpc")
+	}
+
+	vpc, err := svc.repo.GetVPCByID(subnet.VPCID)
+	if err != nil {
+		return errors.Wrap(err, "could not find vpc for the subnet")
+	}
+
+	contains, err := svc.checkVPCContainsSubnet(*subnet, vpc)
+	if err != nil {
+		return errors.Wrap(err, "error checking if vpc contains subnet")
+	}
+	if !contains {
+		return errors.New("vpc did not contain subnet")
 	}
 
 	overlap, err := svc.checkSubnetOverlap(*subnet, subnets)

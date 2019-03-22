@@ -1,7 +1,11 @@
 package service
 
 import (
+	"net"
+
+	"github.com/apparentlymart/go-cidr/cidr"
 	"github.com/pkg/errors"
+
 	"github.com/thedevelopnik/netplan/pkg/db"
 	m "github.com/thedevelopnik/netplan/pkg/models"
 	"github.com/thedevelopnik/netplan/pkg/networks"
@@ -21,6 +25,7 @@ type NetPlan interface {
 	DeleteSubnet(uint) error
 	checkVPCOverlap(m.VPC, []m.VPC) (bool, error)
 	checkSubnetOverlap(m.Subnet, []m.Subnet) (bool, error)
+	checkVPCContainsSubnet(m.Subnet, m.VPC) (bool, error)
 }
 
 func New(repo db.NetplanRepository) NetPlan {
@@ -31,6 +36,23 @@ func New(repo db.NetplanRepository) NetPlan {
 
 type netplan struct {
 	repo db.NetplanRepository
+}
+
+func (svc netplan) checkVPCContainsSubnet(sn m.Subnet, vpc m.VPC) (bool, error) {
+	subnetNetwork, err := networks.New(sn.CidrBlock)
+	if err != nil {
+		return false, errors.Wrap(err, "could not create a network using the subnet cidrblock")
+	}
+	vpcNetwork, err := networks.New(vpc.CidrBlock)
+	if err != nil {
+		return false, errors.Wrap(err, "could not create a network using the vpc cidrblock")
+	}
+	subnets := []*net.IPNet{subnetNetwork.Cidr}
+	err = cidr.VerifyNoOverlap(subnets, vpcNetwork.Cidr)
+	if err != nil {
+		return false, errors.Wrap(err, "vpc did not contain the subnet")
+	}
+	return true, nil
 }
 
 func (svc netplan) checkVPCOverlap(vpc m.VPC, existingVPCs []m.VPC) (bool, error) {

@@ -1,5 +1,21 @@
 <template>
   <v-container>
+    <v-snackbar
+      v-model="snackbar"
+      :multi-line="true"
+      :timeout="5000"
+      :top="true"
+      :color="'error'"
+    >
+      {{ snackBarText }}
+      <v-btn
+        color="white"
+        flat
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
     <v-layout
       align-content-space-around
       justify-space-around
@@ -7,21 +23,21 @@
     >
       <v-card>
         <v-card-title>Current Network Map</v-card-title>
-        <v-card-content>
+        <v-card-text>
           {{ currentNetworkMap.Name }}
-        </v-card-content>
+        </v-card-text>
       </v-card>
       <v-card>
         <v-card-title>Current VPC</v-card-title>
-        <v-card-content>
+        <v-card-text>
           {{ currentVPC.Name }} - {{ currentVPC.CidrBlock }}
-        </v-card-content>
+        </v-card-text>
       </v-card>
       <v-card>
         <v-card-title>Current Subnet</v-card-title>
-        <v-card-content>
+        <v-card-text>
           {{ currentSubnet.Name }} - {{ currentSubnet.CidrBlock }}
-        </v-card-content>
+        </v-card-text>
       </v-card>
     </v-layout>
     <v-layout
@@ -211,6 +227,8 @@ export default {
         const created = await createNetworkMap(networkMap)
         this.setCurrentNetworkMap(created)
       } catch (err) {
+        this.snackbar = true
+        this.snackBarText = 'Could not create network map.'
         console.error(err)
       }
     },
@@ -231,8 +249,12 @@ export default {
       try {
         vpc = await createVPC(vpc)
       } catch (err) {
+        this.snackbar = true
+        this.snackBarText = 'Could not create vpc.'
         console.error(err)
+        return
       }
+      this.currentNetworkMap.VPCs.push(vpc)
       try {
         const networkMap = await getNetworkMap(vpc.NetworkMapID)
         this.currentNetworkMap = networkMap
@@ -254,9 +276,13 @@ export default {
         subnet = await createSubnet(subnet)
       } catch (err) {
         console.error(err)
+        this.snackbar = true
+        this.snackBarText = 'Could not create subnet.'
+        return
       }
+      this.currentVPC.Subnets.push(subnet)
       try {
-        await this.setCurrentNetworkMap(this.currentVPC.NetworkMapID)
+        await this.setCurrentNetworkMap(this.currentNetworkMap)
         this.currentSubnet = subnet
       } catch (err) {
         console.error(err)
@@ -281,6 +307,8 @@ export default {
       currentVPC: {},
       currentNetworkMap: {},
       currentSubnet: {},
+      snackbar: false,
+      snackBarText: '',
       networkMapHeaders: [
         {
           text: 'ID',

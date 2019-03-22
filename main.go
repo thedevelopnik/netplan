@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/thedevelopnik/netplan/pkg/models"
+
 	"github.com/thedevelopnik/netplan/pkg/config"
 
 	"github.com/gin-gonic/gin"
@@ -25,15 +27,18 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	db.AutoMigrate(&models.Subnet{}, &models.VPC{}, &models.NetworkMap{})
 
 	repo := database.New(db)
 	svc := service.New(repo)
 	t := transport.New(svc)
 
 	r := gin.Default()
+	r.Static("/js", "./dist/js")
+	r.Static("/css", "./dist/css")
+	r.StaticFile("/", "./dist/index.html")
 	r.StaticFile("/app.js", "./dist/app.js")
 	r.StaticFile("/about.js", "./dist/about.js")
-	r.StaticFile("/", "./dist/index.html")
 	v1 := r.Group("/v1")
 	{
 		// NetworkMap Endpoints

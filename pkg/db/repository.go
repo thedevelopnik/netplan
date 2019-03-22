@@ -19,6 +19,7 @@ type NetplanRepository interface {
 	DeleteSubnet(uint) error
 	GetVPCsByNetworkMapID(uint) ([]m.VPC, error)
 	GetSubnetsByVPCID(uint) ([]m.Subnet, error)
+	GetVPCByID(uint) (m.VPC, error)
 }
 
 func New(db *gorm.DB) NetplanRepository {

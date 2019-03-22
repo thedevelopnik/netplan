@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  netplan:
+    image: thedevelopnik/netplan
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    environment:
+      ENV: production
+      PG_HOST: database
+      PG_PORT: "5432"
+      PG_USER: netplan
+      PG_PASSWORD: netplan
+      PG_DBNAME: netplan
+      PG_SSLMODE: disable
+
+  database:
+    image: postgres:11-alpine
+    ports:
+      - "6666:5432"
+    environment:
+      POSTGRES_PASSWORD: netplan
+      POSTGRES_USER: netplan
+      POSTGRES_DB: netplan
+
